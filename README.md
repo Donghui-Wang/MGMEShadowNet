@@ -67,7 +67,7 @@ The results reported in the paper are calculated by the `matlab` script used in 
 
 ### Testing results
 
-The testing results on dataset  ISTD+, SRD, USR are: [results](https://pan.baidu.com/s/1Z7q5YfuhWiDTvmKo3QMJdg?pwd=9sgm).
+The testing results on dataset  ISTD+, SRD are: [results](https://pan.baidu.com/s/1Z7q5YfuhWiDTvmKo3QMJdg?pwd=9sgm).
 
 # References
 
