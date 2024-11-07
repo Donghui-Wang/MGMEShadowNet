@@ -117,9 +117,9 @@ class DDPM(BaseModel):
         self.netG.eval()
         with torch.no_grad():
             if isinstance(self.netG, nn.DataParallel):
-                self.SR,self.mask1 = self.netG.module.sample(batch_size, continous)
+                self.SR = self.netG.module.sample(batch_size, continous)
             else:
-                self.SR,self.mask1 = self.netG.sample(self.data['SR'],self.data['mask'], continous)
+                self.SR = self.netG.sample(self.data['SR'],self.data['mask'], continous)
         self.netG.train()
 
     def set_loss(self):
@@ -147,10 +147,8 @@ class DDPM(BaseModel):
             out_dict['INF'] = self.mask.float().cpu()
         else:
             out_dict['SR'] = self.SR.detach().float().cpu()
-#            out_dict['INF'] = self.mask1.float().cpu()
             out_dict['HR'] = self.data['HR'].detach().float().cpu()
-            #out_dict['mask'] = self.mask.float().cpu()
-            out_dict['mask1'] = self.data['mask'].detach().float().cpu()
+
 
             if need_LR and 'LR' in self.data:
                 out_dict['LR'] = self.data['LR'].detach().float().cpu()

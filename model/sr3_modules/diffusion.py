@@ -230,17 +230,8 @@ class GaussianDiffusion(nn.Module):
             at_next = self.compute_alpha(b, next_t.long())
             xt = xs[-1].to('cuda')
 
-            # if i >= len(b) * 0.2:
-            #     et, mask = self.denoise_fn(torch.cat([x_lr, mask_0, xt], dim=1), t)
-            # else:
-            #     et, mask = self.denoise_fn(torch.cat([x_lr, mask_0, xt], dim=1), t)
+            et,mask = self.denoise_fn(torch.cat([x_lr, mask_0, xt], dim=1), t)
 
-            if i >= len(b) * 0.2:
-                et = self.denoise_fn(torch.cat([x_lr, mask_0, xt], dim=1), t)
-            else:
-                et = self.denoise_fn(torch.cat([x_lr, mask_0, xt], dim=1), t)
-
-            # mask1 = mask
             x0_t = (xt - et * (1 - at).sqrt()) / at.sqrt()
             x0_preds.append(x0_t.to('cpu'))
             #mask_preds.append(mask1.to('cpu'))
@@ -252,7 +243,7 @@ class GaussianDiffusion(nn.Module):
             xs.append(xt_next.to('cpu'))
 
         ret_img = xs
-        return ret_img[-1]#, mask_preds[-1]
+        return ret_img[-1]
 
     @torch.no_grad()
     def sample(self, SR, mask, continous=False):

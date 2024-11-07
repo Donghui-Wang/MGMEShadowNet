@@ -81,10 +81,7 @@ if __name__ == "__main__":
         visuals = diffusion.get_current_visuals(need_LR=True)
 
         hr_img = Metrics.tensor2img(visuals['HR'])  # uint8
-#        mask_img = Metrics.tensor2img(visuals['mask'])
-#        fake_img = Metrics.tensor2img(visuals['INF'])  # uint8
         lr_img = Metrics.tensor2img(visuals['LR'])
-        mask_img = Metrics.tensor2img(visuals['mask1'])
 
 
         sr_img_mode = 'grid'
@@ -98,8 +95,7 @@ if __name__ == "__main__":
         else:
             # grid img
             sr_img = Metrics.tensor2img(visuals['SR'])  # uint8
-            Metrics.save_img(
-                sr_img, '{}/{}_{}_sr_process.png'.format(result_path, current_step, idx))
+
             Metrics.save_img(
                 Metrics.tensor2img(visuals['SR'][-1]), '{}/{}_{}_sr.png'.format(result_path, current_step, idx))
 
@@ -107,15 +103,6 @@ if __name__ == "__main__":
             hr_img, '{}/{}_{}_hr.png'.format(result_path, current_step, idx))
         Metrics.save_img(
             lr_img, '{}/{}_{}_lr.png'.format(result_path, current_step, idx))
-        # Metrics.save_img1(
-        #     mask_img, '{}/{}_{}_mask.png'.format(result_path, current_step, idx))
-  #      Metrics.save_img1(
-#           fake_img, '{}/{}_{}_inf.png'.format(result_path, current_step, idx))
-        Metrics.save_img1(
-            mask_img, '{}/{}_{}_mask.png'.format(result_path, current_step, idx))
-
-     #   if wandb_logger and opt['log_infer']:
-     #       wandb_logger.log_eval_data(fake_img, Metrics.tensor2img(visuals['SR'][-1]), hr_img)
 
     if wandb_logger and opt['log_infer']:
         wandb_logger.log_eval_table(commit=True)

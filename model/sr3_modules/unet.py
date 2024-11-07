@@ -390,7 +390,7 @@ class UNet(nn.Module):
 
         self.final_conv = Block(pre_channel, default(out_channel, in_channel), groups=norm_groups)
 
-#        self.mask_tail = MEM()
+        self.mask_tail = MEM()
 
     def forward(self, x, time):
         # x_lr = x[:, :3, :, :]
@@ -427,68 +427,68 @@ class UNet(nn.Module):
             else:
                 x = layer(x)
 
-        return self.final_conv(x)#, self.mask_tail(x)
+        return self.final_conv(x), self.mask_tail(x)
 
 
-# class MEM(nn.Module):
-#     def __init__(self):
-#         super(MEM, self).__init__()
-#         # 原始卷积和空洞卷积
-#         self.conv1 = nn.Conv2d(64, 64, 3, padding=1)
-#         self.relu = nn.ReLU(inplace=True)
-#         self.dilated_conv1 = nn.Conv2d(64, 64, 3, padding=2, dilation=2)  # 空洞卷积
-#         self.dilated_conv2 = nn.Conv2d(64, 64, 3, padding=4, dilation=4)  # 空洞卷积
-#
-#         # 金字塔池化模块
-#         self.pyramid_pool1 = nn.AdaptiveAvgPool2d(1)  # 全局平均池化
-#         self.pyramid_pool2 = nn.AdaptiveAvgPool2d(2)  # 2x2 平均池化
-#         self.pyramid_pool3 = nn.AdaptiveAvgPool2d(4)  # 4x4 平均池化
-#
-#         # 通道压缩卷积层，将通道数从 256 压缩到 67
-#         self.channel_compress = nn.Conv2d(256, 67, 1, 1)
-#
-#         # 最终卷积层
-#         self.final_conv = nn.Conv2d(67, 1, 1, 1, 0)
-#         self.sigmoid = nn.Sigmoid()
-#
-#         # 调整 identity 通道数的卷积层
-#         self.match_channels = nn.Conv2d(64, 1, 1, 1, 0)
-#
-#     def forward(self, x):
-#         identity = x  # 保存原始输入作为恒等（残差）连接
-#
-#         # 原始卷积和空洞卷积
-#         x1 = self.relu(self.conv1(x))
-#         x2 = self.relu(self.dilated_conv1(x1))
-#         x3 = self.relu(self.dilated_conv2(x2))
-#
-#         # 多尺度特征融合
-#         x_fused = x1 + x2 + x3
-#
-#         # 金字塔池化
-#         p1 = self.pyramid_pool1(x_fused)  # 全局池化
-#         p2 = self.pyramid_pool2(x_fused)  # 2x2池化
-#         p3 = self.pyramid_pool3(x_fused)  # 4x4池化
-#
-#         # 上采样到与 x_fused 一样的尺寸
-#         p1_up = F.interpolate(p1, size=x_fused.shape[2:], mode='bilinear', align_corners=True)
-#         p2_up = F.interpolate(p2, size=x_fused.shape[2:], mode='bilinear', align_corners=True)
-#         p3_up = F.interpolate(p3, size=x_fused.shape[2:], mode='bilinear', align_corners=True)
-#
-#         # 将池化结果与原始特征图拼接
-#         x_fused = torch.cat([x_fused, p1_up, p2_up, p3_up], dim=1)
-#
-#         # 使用通道压缩层将通道数从 256 压缩到 67
-#         x_fused = self.channel_compress(x_fused)
-#
-#         # 最终卷积生成 refined mask
-#         out = self.sigmoid(self.final_conv(x_fused))
-#
-#         # 将 identity 调整为与 out 相同的通道数
-#         identity = self.match_channels(identity)
-#
-#         # 添加残差连接
-#         out = out + identity
-#
-#         return out
+class MEM(nn.Module):
+    def __init__(self):
+        super(MEM, self).__init__()
+        # 原始卷积和空洞卷积
+        self.conv1 = nn.Conv2d(64, 64, 3, padding=1)
+        self.relu = nn.ReLU(inplace=True)
+        self.dilated_conv1 = nn.Conv2d(64, 64, 3, padding=2, dilation=2)  # 空洞卷积
+        self.dilated_conv2 = nn.Conv2d(64, 64, 3, padding=4, dilation=4)  # 空洞卷积
+
+        # 金字塔池化模块
+        self.pyramid_pool1 = nn.AdaptiveAvgPool2d(1)  # 全局平均池化
+        self.pyramid_pool2 = nn.AdaptiveAvgPool2d(2)  # 2x2 平均池化
+        self.pyramid_pool3 = nn.AdaptiveAvgPool2d(4)  # 4x4 平均池化
+
+        # 通道压缩卷积层，将通道数从 256 压缩到 67
+        self.channel_compress = nn.Conv2d(256, 67, 1, 1)
+
+        # 最终卷积层
+        self.final_conv = nn.Conv2d(67, 1, 1, 1, 0)
+        self.sigmoid = nn.Sigmoid()
+
+        # 调整 identity 通道数的卷积层
+        self.match_channels = nn.Conv2d(64, 1, 1, 1, 0)
+
+    def forward(self, x):
+        identity = x  # 保存原始输入作为恒等（残差）连接
+
+        # 原始卷积和空洞卷积
+        x1 = self.relu(self.conv1(x))
+        x2 = self.relu(self.dilated_conv1(x1))
+        x3 = self.relu(self.dilated_conv2(x2))
+
+        # 多尺度特征融合
+        x_fused = x1 + x2 + x3
+
+        # 金字塔池化
+        p1 = self.pyramid_pool1(x_fused)  # 全局池化
+        p2 = self.pyramid_pool2(x_fused)  # 2x2池化
+        p3 = self.pyramid_pool3(x_fused)  # 4x4池化
+
+        # 上采样到与 x_fused 一样的尺寸
+        p1_up = F.interpolate(p1, size=x_fused.shape[2:], mode='bilinear', align_corners=True)
+        p2_up = F.interpolate(p2, size=x_fused.shape[2:], mode='bilinear', align_corners=True)
+        p3_up = F.interpolate(p3, size=x_fused.shape[2:], mode='bilinear', align_corners=True)
+
+        # 将池化结果与原始特征图拼接
+        x_fused = torch.cat([x_fused, p1_up, p2_up, p3_up], dim=1)
+
+        # 使用通道压缩层将通道数从 256 压缩到 67
+        x_fused = self.channel_compress(x_fused)
+
+        # 最终卷积生成 refined mask
+        out = self.sigmoid(self.final_conv(x_fused))
+
+        # 将 identity 调整为与 out 相同的通道数
+        identity = self.match_channels(identity)
+
+        # 添加残差连接
+        out = out + identity
+
+        return out
 
